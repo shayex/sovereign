@@ -3690,7 +3690,7 @@
     .brand-text { font-size: 22px; }
   }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@sb/sb-js@2"></script>
 </head>
 <body>
 
@@ -4984,7 +4984,7 @@ const SB_KEY_TO_TABLE = {
 };
 
 // Supabase client (initialized after config is set)
-let supabase = null;
+let sb = null;
 let supabaseConfig = null;
 // Cached current arrays so set() can compute diffs (insert/update/delete)
 const sbCache = {};
@@ -5007,7 +5007,7 @@ function initSupabaseClient(cfg) {
     console.error('Supabase SDK not loaded');
     return false;
   }
-  supabase = window.supabase.createClient(cfg.url, cfg.anonKey, {
+  sb = window.supabase.createClient(cfg.url, cfg.anonKey, {
     auth: { persistSession: false },
     realtime: { params: { eventsPerSecond: 10 } }
   });
@@ -5017,9 +5017,9 @@ function initSupabaseClient(cfg) {
 
 // Test connection by querying a table
 async function testSupabaseConnection() {
-  if (!supabase) return { ok: false, error: 'Client non initialisé' };
+  if (!sb) return { ok: false, error: 'Client non initialisé' };
   try {
-    const { error } = await supabase.from('sovereign_kv').select('key').limit(1);
+    const { error } = await sb.from('sovereign_kv').select('key').limit(1);
     if (error) return { ok: false, error: error.message };
     return { ok: true };
   } catch (e) {
@@ -5066,11 +5066,11 @@ async function saveSupabaseConfig() {
 // decompose into rows for Supabase, and recompose on read.
 const appStorage = {
   async get(key) {
-    if (!supabase) return null;
+    if (!sb) return null;
     const mapping = SB_KEY_TO_TABLE[key];
     if (mapping) {
       try {
-        const { data, error } = await supabase.from(mapping.table).select('data').order('updated_at', { ascending: false });
+        const { data, error } = await sb.from(mapping.table).select('data').order('updated_at', { ascending: false });
         if (error) { console.error('SB get error', key, error); return null; }
         const arr = (data || []).map(r => r.data);
         sbCache[key] = arr;
@@ -5081,14 +5081,14 @@ const appStorage = {
     }
     // KV fallback
     try {
-      const { data, error } = await supabase.from('sovereign_kv').select('value').eq('key', key).maybeSingle();
+      const { data, error } = await sb.from('sovereign_kv').select('value').eq('key', key).maybeSingle();
       if (error || !data) return null;
       return { key, value: typeof data.value === 'string' ? data.value : JSON.stringify(data.value) };
     } catch (e) { return null; }
   },
 
   async set(key, value) {
-    if (!supabase) throw new Error('Supabase non configuré');
+    if (!sb) throw new Error('Supabase non configuré');
     const mapping = SB_KEY_TO_TABLE[key];
     if (mapping) {
       // value is a JSON string of an array of objects each with an `id`
@@ -5103,14 +5103,14 @@ const appStorage = {
       // Upsert all current entries
       if (arr.length > 0) {
         const rows = arr.map(o => ({ id: o.id, data: o }));
-        const { error: upErr } = await supabase.from(mapping.table).upsert(rows, { onConflict: 'id' });
+        const { error: upErr } = await sb.from(mapping.table).upsert(rows, { onConflict: 'id' });
         if (upErr) { console.error('SB upsert error', key, upErr); throw new Error('Sauvegarde Supabase échouée: ' + upErr.message); }
       }
 
       // Delete entries that disappeared
       const toDelete = [...prevIds].filter(id => !newIds.has(id));
       if (toDelete.length > 0) {
-        const { error: delErr } = await supabase.from(mapping.table).delete().in('id', toDelete);
+        const { error: delErr } = await sb.from(mapping.table).delete().in('id', toDelete);
         if (delErr) console.error('SB delete error', key, delErr);
       }
       sbCache[key] = arr;
@@ -5119,20 +5119,20 @@ const appStorage = {
     // KV fallback
     let jsonValue;
     try { jsonValue = JSON.parse(value); } catch (e) { jsonValue = value; }
-    const { error } = await supabase.from('sovereign_kv').upsert({ key, value: jsonValue }, { onConflict: 'key' });
+    const { error } = await sb.from('sovereign_kv').upsert({ key, value: jsonValue }, { onConflict: 'key' });
     if (error) throw new Error('Sauvegarde Supabase échouée: ' + error.message);
     return { key, value };
   },
 
   async delete(key) {
-    if (!supabase) return;
+    if (!sb) return;
     const mapping = SB_KEY_TO_TABLE[key];
     if (mapping) {
-      await supabase.from(mapping.table).delete().neq('id', '___never_match___');
+      await sb.from(mapping.table).delete().neq('id', '___never_match___');
       sbCache[key] = [];
       return;
     }
-    await supabase.from('sovereign_kv').delete().eq('key', key);
+    await sb.from('sovereign_kv').delete().eq('key', key);
   }
 };
 
@@ -6257,14 +6257,14 @@ async function reloadDataFromSupabase() {
 }
 
 function setupRealtimeSubscriptions() {
-  if (!supabase) return;
+  if (!sb) return;
   // Tear down existing channel before recreating
   if (realtimeChannel) {
-    try { supabase.removeChannel(realtimeChannel); } catch (e) {}
+    try { sb.removeChannel(realtimeChannel); } catch (e) {}
     realtimeChannel = null;
   }
   const tables = Object.values(SB_KEY_TO_TABLE).map(m => m.table).concat(['sovereign_kv']);
-  realtimeChannel = supabase.channel('sovereign_main');
+  realtimeChannel = sb.channel('sovereign_main');
   tables.forEach(t => {
     realtimeChannel.on(
       'postgres_changes',
@@ -10725,7 +10725,7 @@ async function deleteCalendarEvent() {
    SUPABASE MIGRATION & CONFIG EDIT
    ============================================================ */
 async function migrateLocalStorageToSupabase() {
-  if (!supabase) { showToast('Supabase non configuré', 'error'); return; }
+  if (!sb) { showToast('Supabase non configuré', 'error'); return; }
   if (!confirm('Cette action va POUSSER toutes les données présentes dans le localStorage de ce navigateur vers Supabase.\n\nLes données déjà dans Supabase seront ÉCRASÉES par celles du localStorage.\n\nContinuer ?')) return;
 
   const keys = [
@@ -10781,14 +10781,14 @@ async function runAuthDiag() {
   add('Config sauvée', cfg ? 'OUI' : 'NON', !!cfg);
   if (cfg) add('URL', cfg.url ? cfg.url.replace('https://','').slice(0,30) : '(vide)', !!cfg.url);
   if (cfg) add('Key', cfg.anonKey ? '…' + cfg.anonKey.slice(-12) : '(vide)', !!cfg.anonKey);
-  add('Client init', supabase ? 'OK' : 'NON', !!supabase);
+  add('Client init', sb ? 'OK' : 'NON', !!sb);
   add('users en mémoire', users.length, users.length > 0);
 
-  // Test live si supabase initialisé
-  if (supabase) {
+  // Test live si sb initialisé
+  if (sb) {
     body.innerHTML = lines.join('') + '<div style="color:#94a3b8;margin-top:6px;">Test SELECT en cours…</div>';
     try {
-      const res = await supabase.from('sovereign_users').select('id').limit(50);
+      const res = await sb.from('sovereign_users').select('id').limit(50);
       if (res.error) {
         add('SELECT users', 'ÉCHEC: ' + res.error.message, false);
       } else {
@@ -10808,7 +10808,7 @@ function autoShowAuthDiag() {
   const authVisible = document.getElementById('authScreen') &&
                       document.getElementById('authScreen').style.display !== 'none';
   if (!authVisible) return;
-  if (!supabase || users.length === 0) {
+  if (!sb || users.length === 0) {
     showDiagnostic();
   }
 }
@@ -10836,7 +10836,7 @@ async function runDiagnostic() {
   }
 
   // 3. Client initialized?
-  html += row('Client initialisé', supabase ? 'OUI' : 'NON', !!supabase);
+  html += row('Client initialisé', sb ? 'OUI' : 'NON', !!sb);
 
   // 4. Page origin (file:// peut poser problème)
   const origin = window.location.protocol;
@@ -10848,13 +10848,13 @@ async function runDiagnostic() {
   }
 
   // 5. Test connection
-  if (supabase) {
+  if (sb) {
     body.innerHTML = html + '<div style="padding:10px;color:var(--text-mute);">Test en cours…</div>';
     try {
-      const { error } = await supabase.from('sovereign_kv').select('key').limit(1);
+      const { error } = await sb.from('sovereign_kv').select('key').limit(1);
       html += row('Test SELECT sovereign_kv', error ? 'ÉCHEC : ' + error.message : 'OK', !error);
 
-      const usersTest = await supabase.from('sovereign_users').select('id, data').limit(50);
+      const usersTest = await sb.from('sovereign_users').select('id, data').limit(50);
       if (usersTest.error) {
         html += row('Test SELECT sovereign_users', 'ÉCHEC : ' + usersTest.error.message, false);
       } else {
@@ -10863,13 +10863,13 @@ async function runDiagnostic() {
 
       // Test INSERT permission with dummy record
       const testId = 'test_' + Date.now();
-      const ins = await supabase.from('sovereign_kv').upsert({ key: testId, value: { test: true } });
+      const ins = await sb.from('sovereign_kv').upsert({ key: testId, value: { test: true } });
       if (ins.error) {
         html += row('Test INSERT/UPSERT (sovereign_kv)', 'ÉCHEC : ' + ins.error.message, false);
       } else {
         html += row('Test INSERT/UPSERT (sovereign_kv)', 'OK', true);
         // Clean up
-        await supabase.from('sovereign_kv').delete().eq('key', testId);
+        await sb.from('sovereign_kv').delete().eq('key', testId);
       }
     } catch (e) {
       html += row('Exception lors du test', e.message || String(e), false);
@@ -10891,7 +10891,7 @@ function showDiagnostic() {
 }
 
 async function forceCreateAdmin() {
-  if (!supabase) {
+  if (!sb) {
     showToast('Supabase non configuré', 'error');
     return;
   }
@@ -10904,7 +10904,7 @@ async function forceCreateAdmin() {
       displayName: 'Administrator',
       createdAt: Date.now()
     };
-    const { error } = await supabase.from('sovereign_users').upsert({ id: adminUser.id, data: adminUser });
+    const { error } = await sb.from('sovereign_users').upsert({ id: adminUser.id, data: adminUser });
     if (error) {
       alert('Échec création admin : ' + error.message);
       return;
