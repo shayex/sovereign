@@ -3744,60 +3744,13 @@ window.addEventListener('DOMContentLoaded', function() {
 
     <div class="auth-footer">
       Accès réservé · Console interne
-      <br>
-      <a href="#" onclick="event.preventDefault();showDiagnostic();" style="font-size:10px;color:var(--text-mute);letter-spacing:0.1em;text-decoration:underline;margin-top:8px;display:inline-block;">Diagnostic / Reconfigurer</a>
     </div>
-  </div>
-</div>
-
-<!-- Always-visible Supabase status panel on auth screen -->
-<div id="authDiagPanel" style="position:fixed;bottom:20px;left:20px;right:20px;max-width:560px;margin:0 auto;background:#1a0808;border:2px solid var(--red);border-radius:10px;padding:14px 16px;z-index:1010;font-size:12px;color:#fff;display:none;box-shadow:0 8px 30px rgba(0,0,0,0.6);">
-  <div style="font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--red-bright);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
-    <span>⚠️ Diagnostic Supabase</span>
-    <button type="button" onclick="document.getElementById('authDiagPanel').style.display='none';" style="background:none;border:none;color:#fff;cursor:pointer;font-size:18px;line-height:1;">×</button>
-  </div>
-  <div id="authDiagBody" style="font-family:var(--font-mono);font-size:11px;line-height:1.5;"></div>
-  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-    <button type="button" class="btn btn-ghost btn-sm" onclick="resetSupabaseConfig();">Reconfigurer Supabase</button>
-    <button type="button" class="btn btn-primary btn-sm" onclick="forceCreateAdmin();">Forcer création admin</button>
-    <button type="button" class="btn btn-ghost btn-sm" onclick="runAuthDiag();">Re-tester</button>
   </div>
 </div>
 
 <!-- ============================================================
      APP SHELL
      ============================================================ -->
-<!-- ============================================================
-     SUPABASE CONFIG SCREEN (first launch)
-     ============================================================ -->
-<div id="supabaseConfigScreen">
-  <div class="onboarding-card">
-    <div class="onb-welcome">
-      <div class="onb-welcome-sub">Configuration initiale</div>
-      <h2>Connecte ton Supabase</h2>
-      <p>Pour synchroniser les données entre tous les membres de l'org, l'app a besoin des identifiants de ta base Supabase.<br>Ces infos sont stockées localement dans ce navigateur.</p>
-    </div>
-
-    <div class="form-group">
-      <label>Project URL *</label>
-      <input type="url" id="sb_url" placeholder="https://xxxxxxxxxxxxx.supabase.co" autocomplete="off" />
-      <div style="font-size:11px;color:var(--text-mute);margin-top:4px;">Settings → API → Project URL</div>
-    </div>
-
-    <div class="form-group">
-      <label>Anon public key *</label>
-      <textarea id="sb_anonKey" placeholder="eyJhbGc..." style="min-height:80px;font-family:var(--font-mono);font-size:11px;" autocomplete="off"></textarea>
-      <div style="font-size:11px;color:var(--text-mute);margin-top:4px;">Settings → API → Project API keys → <strong>anon public</strong> (PAS service_role)</div>
-    </div>
-
-    <div class="onb-error" id="sb_error"></div>
-
-    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);">
-      <button type="button" class="btn btn-primary" onclick="saveSupabaseConfig()">Tester et continuer</button>
-    </div>
-  </div>
-</div>
-
 <!-- ============================================================
      ONBOARDING SCREEN (first login of a new account)
      ============================================================ -->
@@ -4371,10 +4324,6 @@ window.addEventListener('DOMContentLoaded', function() {
         <button class="btn btn-ghost" onclick="migrateLocalStorageToSupabase()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
           Migrer localStorage → Supabase
-        </button>
-        <button class="btn btn-ghost" onclick="openSupabaseConfigEdit()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-          Config Supabase
         </button>
         <button class="btn btn-danger" onclick="resetAllData()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -4996,18 +4945,34 @@ const SB_KEY_TO_TABLE = {
   'sovereign_activity':         { table: 'sovereign_activity_log',    keyCol: 'id' }
 };
 
-// Supabase client (initialized after config is set)
+// Supabase client (initialized at startup)
 let sb = null;
 let supabaseConfig = null;
 // Cached current arrays so set() can compute diffs (insert/update/delete)
 const sbCache = {};
 
+// ============================================================
+// ⚙️ SUPABASE CONFIG — HARDCODED FOR SHARED DEPLOYMENT
+// ============================================================
+// Cette config est utilisée pour tous les utilisateurs de l'app.
+// Si tu changes de projet Supabase ou regénères ta anon key,
+// modifie les valeurs ci-dessous PUIS recommit + redéploie sur GitHub.
+//
+// ⚠️ NE METS JAMAIS ta service_role key ici — uniquement la anon key.
+//    La anon key est faite pour être publique (et est protégée par RLS).
+// ============================================================
+const SUPABASE_HARDCODED_CONFIG = {
+  url: 'https://bwbcmjcdveiejpktzaxm.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InprenBpdHlqdmtwZXhtemp3amZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNzk0MjcsImV4cCI6MjA5NTg1NTQyN30.SLbJ__rSV1Jx9C4PWWkxdZcmYNnyJnIr5McWyIGqxY8'
+};
+
 function loadSupabaseConfig() {
-  try {
-    const raw = localStorage.getItem('sovereign_supabase_config');
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) { return null; }
+  // Always return the hardcoded config — every user of the deployed app
+  // shares the same Supabase project.
+  return {
+    url: SUPABASE_HARDCODED_CONFIG.url,
+    anonKey: SUPABASE_HARDCODED_CONFIG.anonKey
+  };
 }
 
 function persistSupabaseConfig(cfg) {
@@ -11038,18 +11003,40 @@ document.addEventListener('keydown', (e) => {
    INIT
    ============================================================ */
 function showConfigScreen(opts) {
+  // The config form is no longer used (Supabase is hardcoded).
+  // This function now just shows a full-screen error message
+  // when something goes wrong with the connection, so the user
+  // isn't stuck on a blank page.
   opts = opts || {};
-  // Hide all other top-level screens to avoid z-index conflicts on browsers that ignore it
-  document.getElementById('authScreen').style.display = 'none';
-  document.getElementById('onboardingScreen').classList.remove('active');
-  document.getElementById('appShell').style.display = 'none';
-  // Show config screen
-  const cfgScreen = document.getElementById('supabaseConfigScreen');
-  cfgScreen.classList.add('active');
-  // Prefill if asked
-  if (opts.url != null) document.getElementById('sb_url').value = opts.url;
-  if (opts.anonKey != null) document.getElementById('sb_anonKey').value = opts.anonKey;
-  document.getElementById('sb_error').textContent = opts.error || '';
+  // Hide other screens
+  const authScreen = document.getElementById('authScreen');
+  if (authScreen) authScreen.style.display = 'none';
+  const onboarding = document.getElementById('onboardingScreen');
+  if (onboarding) onboarding.classList.remove('active');
+  const appShell = document.getElementById('appShell');
+  if (appShell) appShell.style.display = 'none';
+
+  // Build (or reuse) a minimal full-screen error overlay
+  let overlay = document.getElementById('sovBootError');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'sovBootError';
+    overlay.style.cssText = 'position:fixed;inset:0;background:#0a0a0a;color:#fff;display:flex;align-items:center;justify-content:center;padding:20px;z-index:99999;font-family:system-ui,sans-serif;';
+    document.body.appendChild(overlay);
+  }
+  const errMsg = opts.error || 'Erreur de connexion au backend Supabase.';
+  overlay.innerHTML =
+    '<div style="max-width:520px;background:#141414;border:1px solid #2a2a2a;border-radius:14px;padding:32px;">' +
+      '<div style="font-size:11px;letter-spacing:0.2em;color:#dc2626;text-transform:uppercase;font-weight:700;margin-bottom:14px;">Erreur de démarrage</div>' +
+      '<h2 style="margin:0 0 16px 0;font-size:22px;color:#fff;">Connexion impossible</h2>' +
+      '<div style="color:#cbd5e1;font-size:13px;line-height:1.6;white-space:pre-wrap;margin-bottom:20px;">' +
+        (errMsg.replace(/</g, '&lt;')) +
+      '</div>' +
+      '<div style="font-size:11px;color:#94a3b8;line-height:1.5;padding-top:16px;border-top:1px solid #2a2a2a;">' +
+        'L\'app utilise une configuration Supabase intégrée. Si ce message s\'affiche en permanence, contacte l\'administrateur du site pour qu\'il vérifie la config dans le code source.' +
+      '</div>' +
+      '<button onclick="location.reload()" style="margin-top:20px;background:#dc2626;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;letter-spacing:0.1em;text-transform:uppercase;font-size:11px;">Réessayer</button>' +
+    '</div>';
 }
 
 // Wait until the Supabase JS SDK is loaded from CDN
