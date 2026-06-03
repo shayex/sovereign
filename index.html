@@ -2500,6 +2500,188 @@
     border-color: var(--red);
     color: #fff;
   }
+
+  /* === Scouting view toggle === */
+  .scouting-view-toggle {
+    display: inline-flex;
+    gap: 2px;
+    margin-left: auto;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2px;
+  }
+  .sv-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-mute);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.15s;
+  }
+  .sv-toggle-btn:hover { color: var(--text); }
+  .sv-toggle-btn.active { background: var(--red); color: #fff; }
+
+  /* === Kanban board === */
+  .kanban-board {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+  .kanban-col {
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.15s, background 0.15s;
+    overflow: hidden;
+  }
+  .kanban-col.drag-over {
+    border-color: var(--red);
+    background: rgba(220,38,38,0.05);
+  }
+  .kanban-col-accent {
+    height: 3px;
+  }
+  .kanban-col.watching .kanban-col-accent { background: #64748b; }
+  .kanban-col.contacted .kanban-col-accent { background: var(--blue); }
+  .kanban-col.interested .kanban-col-accent { background: var(--amber); }
+  .kanban-col.signed .kanban-col-accent { background: var(--green); }
+  .kanban-col.rejected .kanban-col-accent { background: var(--red-deep); }
+  .kanban-col-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .kanban-col-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .kanban-col-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-mute);
+    background: var(--bg-2);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .kanban-col-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    min-height: 100px;
+  }
+  .kanban-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    cursor: grab;
+    transition: border-color 0.15s, transform 0.15s;
+    position: relative;
+  }
+  .kanban-card:hover { border-color: var(--red); transform: translateY(-1px); }
+  .kanban-card:active { cursor: grabbing; }
+  .kanban-card.dragging { opacity: 0.4; }
+  .kanban-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .kanban-card-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--red-bright);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .kanban-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .kanban-card-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .kanban-card-sub {
+    font-size: 11px;
+    color: var(--text-mute);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+  }
+  .kanban-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .kanban-card-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--bg-3);
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .kanban-card-tag.nego { background: rgba(245,158,11,0.12); color: var(--amber); }
+  .kanban-card-tag.fa { background: rgba(34,197,94,0.12); color: var(--green); }
+  .kanban-card-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .kanban-card-actions button {
+    flex: 1;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 10px;
+    padding: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .kanban-card-actions button:hover { border-color: var(--red); color: var(--text); }
+  .kanban-card-actions button.promote:hover { border-color: var(--green); color: var(--green); }
+  .kanban-empty-hint {
+    font-size: 11px;
+    color: var(--text-mute);
+    font-style: italic;
+    text-align: center;
+    padding: 20px 8px;
+    opacity: 0.6;
+  }
+  @media (max-width: 1100px) {
+    .kanban-board { grid-template-columns: 1fr; }
+  }
+
   .dash-empty {
     padding: 24px;
     text-align: center;
@@ -4267,6 +4449,14 @@ window.addEventListener('DOMContentLoaded', function() {
       <button class="filter-chip" data-pfilter="interested" onclick="setScoutingFilter('interested')">Intéressés</button>
       <button class="filter-chip" data-pfilter="rejected" onclick="setScoutingFilter('rejected')">Refusés</button>
       <input type="text" class="search-input" placeholder="Rechercher un prospect..." id="scoutingSearch" oninput="renderScouting()" />
+      <div class="scouting-view-toggle">
+        <button class="sv-toggle-btn active" data-sview="grid" onclick="setScoutingView('grid')" title="Vue grille">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </button>
+        <button class="sv-toggle-btn" data-sview="kanban" onclick="setScoutingView('kanban')" title="Vue pipeline (Kanban)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="18" y1="3" x2="18" y2="21"/></svg>
+        </button>
+      </div>
     </div>
     <div id="scoutingList"></div>
   </div>
@@ -5230,6 +5420,7 @@ let currentTab = 'dashboard';
 
 let rosterFilter = 'all';
 let scoutingFilter = 'all';
+let scoutingView = 'grid';  // 'grid' | 'kanban'
 let staffFilter = 'all';
 
 let editingPlayerId = null;
@@ -9160,7 +9351,21 @@ function setScoutingFilter(f) {
   renderScouting();
 }
 
+function setScoutingView(view) {
+  scoutingView = view;
+  document.querySelectorAll('[data-sview]').forEach(b => b.classList.toggle('active', b.dataset.sview === view));
+  // Hide status filter chips in kanban (columns already represent statuses)
+  document.querySelectorAll('[data-pfilter]').forEach(b => {
+    b.style.display = view === 'kanban' ? 'none' : '';
+  });
+  renderScouting();
+}
+
 function renderScouting() {
+  if (scoutingView === 'kanban') {
+    renderScoutingKanban();
+    return;
+  }
   const search = (document.getElementById('scoutingSearch')?.value || '').toLowerCase().trim();
   let list = prospects.slice();
 
@@ -9183,6 +9388,164 @@ function renderScouting() {
   }
 
   container.innerHTML = '<div class="grid">' + list.map(p => prospectCardHtml(p)).join('') + '</div>';
+}
+
+// === KANBAN VIEW ===
+const KANBAN_COLUMNS = [
+  { key: 'watching',   label: 'À suivre' },
+  { key: 'contacted',  label: 'Contacté' },
+  { key: 'interested', label: 'Intéressé' },
+  { key: 'signed',     label: 'Signé' },
+  { key: 'rejected',   label: 'Refusé' }
+];
+
+function renderScoutingKanban() {
+  const container = document.getElementById('scoutingList');
+  const search = (document.getElementById('scoutingSearch')?.value || '').toLowerCase().trim();
+
+  let list = prospects.slice();
+  if (search) {
+    list = list.filter(p =>
+      (p.pseudo || '').toLowerCase().includes(search) ||
+      (p.realName || '').toLowerCase().includes(search) ||
+      (p.game || '').toLowerCase().includes(search) ||
+      (p.currentTeam || '').toLowerCase().includes(search)
+    );
+  }
+
+  const cols = KANBAN_COLUMNS.map(col => {
+    let colProspects;
+    if (col.key === 'signed') {
+      // "Signé" shows players promoted from a prospect (read-only cards)
+      colProspects = players.filter(pl => pl.fromProspect).map(pl => ({ _player: pl }));
+      if (search) {
+        colProspects = colProspects.filter(x => (x._player.pseudo || '').toLowerCase().includes(search));
+      }
+    } else {
+      colProspects = list.filter(p => (p.status || 'watching') === col.key);
+    }
+
+    const cards = colProspects.length > 0
+      ? colProspects.map(item => item._player ? kanbanSignedCard(item._player) : kanbanCard(item)).join('')
+      : '<div class="kanban-empty-hint">' + (col.key === 'signed' ? 'Aucun joueur promu' : 'Glisse un prospect ici') + '</div>';
+
+    return '<div class="kanban-col ' + col.key + '" data-col="' + col.key + '" ' +
+      'ondragover="kanbanDragOver(event)" ondragleave="kanbanDragLeave(event)" ondrop="kanbanDrop(event,\'' + col.key + '\')">' +
+      '<div class="kanban-col-accent"></div>' +
+      '<div class="kanban-col-header">' +
+        '<span class="kanban-col-title">' + col.label + '</span>' +
+        '<span class="kanban-col-count">' + colProspects.length + '</span>' +
+      '</div>' +
+      '<div class="kanban-col-body">' + cards + '</div>' +
+    '</div>';
+  }).join('');
+
+  container.innerHTML = '<div class="kanban-board">' + cols + '</div>';
+}
+
+function kanbanCard(p) {
+  const avatar = p.photo ? '<img src="' + escapeAttr(p.photo) + '" />' : (p.pseudo || '?').charAt(0).toUpperCase();
+  const flag = p.country ? flagImg(p.country, 16) : '';
+  const teamRaw = (p.currentTeam || '').trim();
+  const isFA = isFreeAgent(teamRaw);
+  const negoCount = Array.isArray(p.negoThread) ? p.negoThread.length : 0;
+
+  const tags = [];
+  if (isFA) tags.push('<span class="kanban-card-tag fa">F/A</span>');
+  else if (teamRaw) tags.push('<span class="kanban-card-tag">' + escapeHtml(teamRaw) + '</span>');
+  if (p.age) tags.push('<span class="kanban-card-tag">' + p.age + ' ans</span>');
+  if (negoCount > 0) tags.push('<span class="kanban-card-tag nego">📋 ' + negoCount + '</span>');
+
+  return '<div class="kanban-card" draggable="true" data-id="' + p.id + '" ' +
+    'ondragstart="kanbanDragStart(event,\'' + p.id + '\')" ondragend="kanbanDragEnd(event)" ' +
+    'onclick="openProspectModal(\'' + p.id + '\')">' +
+    '<div class="kanban-card-head">' +
+      '<div class="kanban-card-avatar">' + avatar + '</div>' +
+      '<div style="min-width:0;flex:1;">' +
+        '<div class="kanban-card-name">' + escapeHtml(p.pseudo || '—') + '</div>' +
+        '<div class="kanban-card-sub">' + (flag ? flag : '') + (p.realName ? '<span>' + escapeHtml(p.realName) + '</span>' : '') + '</div>' +
+      '</div>' +
+    '</div>' +
+    (tags.length ? '<div class="kanban-card-meta">' + tags.join('') + '</div>' : '') +
+    '<div class="kanban-card-actions">' +
+      '<button onclick="event.stopPropagation();openProspectModal(\'' + p.id + '\')">Éditer</button>' +
+      '<button class="promote" onclick="event.stopPropagation();promoteToPlayer(\'' + p.id + '\')">→ Roster</button>' +
+    '</div>' +
+  '</div>';
+}
+
+// Read-only card for already-signed players (promoted from prospect)
+function kanbanSignedCard(pl) {
+  const avatar = pl.photo ? '<img src="' + escapeAttr(pl.photo) + '" />' : (pl.pseudo || '?').charAt(0).toUpperCase();
+  const flag = pl.country ? flagImg(pl.country, 16) : '';
+  return '<div class="kanban-card" style="cursor:default;opacity:0.85;" onclick="switchTab(\'roster\')">' +
+    '<div class="kanban-card-head">' +
+      '<div class="kanban-card-avatar">' + avatar + '</div>' +
+      '<div style="min-width:0;flex:1;">' +
+        '<div class="kanban-card-name">' + escapeHtml(pl.pseudo || '—') + '</div>' +
+        '<div class="kanban-card-sub">' + (flag ? flag : '') + '<span style="color:var(--green);">✓ Au roster</span></div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+// === Drag and drop ===
+let kanbanDraggedId = null;
+
+function kanbanDragStart(e, id) {
+  kanbanDraggedId = id;
+  e.target.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  // Needed for Firefox
+  try { e.dataTransfer.setData('text/plain', id); } catch (err) {}
+}
+
+function kanbanDragEnd(e) {
+  e.target.classList.remove('dragging');
+  document.querySelectorAll('.kanban-col.drag-over').forEach(c => c.classList.remove('drag-over'));
+}
+
+function kanbanDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const col = e.currentTarget;
+  col.classList.add('drag-over');
+}
+
+function kanbanDragLeave(e) {
+  // Only remove if we're actually leaving the column (not entering a child)
+  if (e.currentTarget.contains(e.relatedTarget)) return;
+  e.currentTarget.classList.remove('drag-over');
+}
+
+async function kanbanDrop(e, newStatus) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const id = kanbanDraggedId;
+  kanbanDraggedId = null;
+  if (!id) return;
+
+  // Dropping into "signed" column = promote to roster
+  if (newStatus === 'signed') {
+    promoteToPlayer(id);
+    return;
+  }
+
+  const p = prospects.find(x => x.id === id);
+  if (!p) return;
+  if (p.status === newStatus) return;   // no change
+
+  const oldStatus = p.status;
+  p.status = newStatus;
+  p.updatedAt = Date.now();
+  await persistProspects();
+  renderScouting();
+  updateCounts();
+  renderDashboard();
+
+  const colLabel = (KANBAN_COLUMNS.find(c => c.key === newStatus) || {}).label || newStatus;
+  logActivity('scouting', 'Statut de ' + p.pseudo + ' changé en "' + colLabel + '"');
+  showToast(p.pseudo + ' → ' + colLabel, 'success');
 }
 
 function statusBadge(status) {
