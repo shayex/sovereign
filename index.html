@@ -4362,6 +4362,10 @@ window.addEventListener('DOMContentLoaded', function() {
     <div class="filters-bar">
       <button class="filter-chip active" data-filter="all" onclick="setRosterFilter('all')">Tous</button>
       <button class="filter-chip" data-filter="active" onclick="setRosterFilter('active')">Actifs</button>
+      <span style="width:1px;height:24px;background:var(--border);margin:0 4px;"></span>
+      <button class="filter-chip team-chip active" data-rteamfilter="all" onclick="setRosterTeamFilter('all')">Toutes équipes</button>
+      <button class="filter-chip team-chip" data-rteamfilter="main" onclick="setRosterTeamFilter('main')">Main</button>
+      <button class="filter-chip team-chip" data-rteamfilter="academy" onclick="setRosterTeamFilter('academy')">Académie</button>
       <input type="text" class="search-input" placeholder="Rechercher un joueur..." id="rosterSearch" oninput="renderRoster()" />
     </div>
     <div id="rosterList"></div>
@@ -4448,6 +4452,10 @@ window.addEventListener('DOMContentLoaded', function() {
       <button class="filter-chip" data-pfilter="contacted" onclick="setScoutingFilter('contacted')">Contactés</button>
       <button class="filter-chip" data-pfilter="interested" onclick="setScoutingFilter('interested')">Intéressés</button>
       <button class="filter-chip" data-pfilter="rejected" onclick="setScoutingFilter('rejected')">Refusés</button>
+      <span style="width:1px;height:24px;background:var(--border);margin:0 4px;"></span>
+      <button class="filter-chip team-chip active" data-teamfilter="all" onclick="setScoutingTeamFilter('all')">Toutes équipes</button>
+      <button class="filter-chip team-chip" data-teamfilter="main" onclick="setScoutingTeamFilter('main')">Main</button>
+      <button class="filter-chip team-chip" data-teamfilter="academy" onclick="setScoutingTeamFilter('academy')">Académie</button>
       <input type="text" class="search-input" placeholder="Rechercher un prospect..." id="scoutingSearch" oninput="renderScouting()" />
       <div class="scouting-view-toggle">
         <button class="sv-toggle-btn active" data-sview="grid" onclick="setScoutingView('grid')" title="Vue grille">
@@ -4581,10 +4589,20 @@ window.addEventListener('DOMContentLoaded', function() {
           <select id="p_game" required></select>
         </div>
         <div class="form-group">
+          <label>Équipe</label>
+          <select id="p_team">
+            <option value="main">Équipe Main</option>
+            <option value="academy">Équipe Académique</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
           <label>Pays</label>
           <div id="p_country_wrapper"></div>
           <input type="hidden" id="p_country" />
         </div>
+        <div class="form-group"></div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -4685,14 +4703,24 @@ window.addEventListener('DOMContentLoaded', function() {
         <div id="sp_country_wrapper"></div>
         <input type="hidden" id="sp_country" />
       </div>
-      <div class="form-group">
-        <label>Statut</label>
-        <select id="sp_status">
-          <option value="watching">À suivre</option>
-          <option value="contacted">Contacté</option>
-          <option value="interested">Intéressé</option>
-          <option value="rejected">Refusé / Pas dispo</option>
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Statut</label>
+          <select id="sp_status">
+            <option value="watching">À suivre</option>
+            <option value="contacted">Contacté</option>
+            <option value="interested">Intéressé</option>
+            <option value="rejected">Refusé / Pas dispo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Équipe cible</label>
+          <select id="sp_targetTeam">
+            <option value="main">Équipe Main</option>
+            <option value="academy">Équipe Académique</option>
+            <option value="undecided">Non défini</option>
+          </select>
+        </div>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -5419,7 +5447,9 @@ let currentUser = null;
 let currentTab = 'dashboard';
 
 let rosterFilter = 'all';
+let rosterTeamFilter = 'all';  // 'all' | 'main' | 'academy'
 let scoutingFilter = 'all';
+let scoutingTeamFilter = 'all';  // 'all' | 'main' | 'academy'
 let scoutingView = 'grid';  // 'grid' | 'kanban'
 let staffFilter = 'all';
 
@@ -7028,50 +7058,41 @@ function renderActivityHeatmap() {
   const totalEl = document.getElementById('heatmapTotal');
   if (!container) return;
 
-  // Count events per day
+  // Count events per day (use LOCAL dates everywhere to avoid timezone drift)
   const counts = {}; // iso → count
   function bump(iso) {
     if (!iso) return;
     counts[iso] = (counts[iso] || 0) + 1;
   }
 
-  // Activity log entries
+  // Activity log entries (timestamp → local date)
   activityLog.forEach(a => {
     if (!a.timestamp) return;
-    const d = new Date(a.timestamp);
-    bump(d.toISOString().slice(0, 10));
+    bump(dateToLocalISO(new Date(a.timestamp)));
   });
-  // PR history entries
+  // PR history + cups (already stored as local YYYY-MM-DD strings)
   players.forEach(p => {
     (p.prHistory || []).forEach(e => bump(e.date));
     (p.cups || []).forEach(c => bump(c.date));
   });
 
-  // Build last 12 weeks grid: 7 rows × 12 cols, ending at today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  // Find this week's Sunday (start of column 12)
-  const todayDow = today.getDay(); // 0 = sunday
-  const totalDays = 12 * 7;
-  // Start from (totalDays - 1 - todayDow) days back so today is in the last column
-  const startDate = new Date(today.getTime() - (totalDays - 1 - todayDow) * 86400000);
-  // Actually: we want columns to be Sun-Sat weeks. Compute startDate as the Sunday (totalDays - 1) days back from today's Sunday-aligned position.
-  // Simpler approach: render exactly 84 cells in column-major order (7 cells per col, 12 cols), with the LAST cell being today.
-  const cells = [];
-  const totalCells = 12 * 7;
-  const start = new Date(today.getTime() - (totalCells - 1 - (6 - todayDow)) * 86400000);
-  // Each column is one week (Sun→Sat). Cell index = col * 7 + dow.
-  // We want today's cell at col=11, row=todayDow. So col 11 represents the week containing today.
-  // Compute the Sunday of column 0: today - (11 weeks + todayDow days)
-  const firstSunday = new Date(today.getTime() - (11 * 7 + todayDow) * 86400000);
+  const todayDow = today.getDay(); // 0 = Sunday
 
+  // Column 11 = current week. Sunday of column 0 is (11 weeks + todayDow days) ago.
+  const firstSunday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (11 * 7 + todayDow));
+
+  const cells = [];
   const monthLabels = []; // { col, label }
   let lastMonth = -1;
   let totalEvents = 0;
+
   for (let col = 0; col < 12; col++) {
     for (let row = 0; row < 7; row++) {
-      const cellDate = new Date(firstSunday.getTime() + (col * 7 + row) * 86400000);
-      const iso = cellDate.toISOString().slice(0, 10);
+      // Build date by day increment (avoids ms/DST drift)
+      const cellDate = new Date(firstSunday.getFullYear(), firstSunday.getMonth(), firstSunday.getDate() + col * 7 + row);
+      const iso = dateToLocalISO(cellDate);
       const isFuture = cellDate.getTime() > today.getTime();
       const count = counts[iso] || 0;
       if (!isFuture) totalEvents += count;
@@ -7084,7 +7105,7 @@ function renderActivityHeatmap() {
       const title = isFuture ? '' : (fmtDateFR(iso) + ' — ' + count + ' événement' + (count > 1 ? 's' : ''));
       cells.push('<div class="' + cls + '"' + (title ? ' title="' + title + '"' : '') + '></div>');
 
-      // Capture month label on first day of column
+      // Capture month label when a new month starts (check the first row of each column)
       if (row === 0) {
         const m = cellDate.getMonth();
         if (m !== lastMonth) {
@@ -7097,10 +7118,15 @@ function renderActivityHeatmap() {
 
   container.innerHTML = cells.join('');
 
-  // Month labels positioned roughly
-  monthsEl.innerHTML = monthLabels.map(m =>
-    '<span style="flex:0 0 auto;margin-right:auto;">' + m.label + '</span>'
-  ).join('');
+  // Month labels aligned to their actual columns (grid mirrors the heatmap: 12 cols)
+  if (monthsEl) {
+    monthsEl.style.display = 'grid';
+    monthsEl.style.gridTemplateColumns = 'repeat(12, 14px)';
+    monthsEl.style.columnGap = '3px';
+    monthsEl.innerHTML = monthLabels.map(m =>
+      '<span style="grid-column:' + (m.col + 1) + ';white-space:nowrap;">' + m.label + '</span>'
+    ).join('');
+  }
 
   if (totalEl) totalEl.textContent = totalEvents + ' événement' + (totalEvents > 1 ? 's' : '');
 }
@@ -8625,6 +8651,12 @@ function setRosterFilter(f) {
   renderRoster();
 }
 
+function setRosterTeamFilter(t) {
+  rosterTeamFilter = t;
+  document.querySelectorAll('[data-rteamfilter]').forEach(b => b.classList.toggle('active', b.dataset.rteamfilter === t));
+  renderRoster();
+}
+
 /* ============================================================
    PLAYER REPORT (1920x1080 image export)
    ============================================================ */
@@ -8967,6 +8999,9 @@ function buildReportHtml(p) {
           (p.realName ? '<span>' + escapeHtml(p.realName) + '</span>' : '') +
           (countryStr ? '<span style="display:inline-flex;align-items:center;gap:8px;background:#dc2626;color:#fff;padding:4px 14px;border-radius:8px;font-size:17px;font-weight:700;letter-spacing:0.1em;">' + escapeHtml(countryStr) + '</span>' : '') +
           (realAge != null && !isNaN(realAge) ? '<span>' + realAge + ' ' + T.years + '</span>' : '') +
+          ((p.team === 'academy')
+            ? '<span style="background:#3b82f6;color:#fff;padding:4px 14px;border-radius:8px;font-size:15px;font-weight:700;letter-spacing:0.1em;">' + (reportOptions.lang === 'en' ? 'ACADEMY' : 'ACADÉMIE') + '</span>'
+            : '<span style="background:rgba(220,38,38,0.2);color:#ef4444;padding:4px 14px;border-radius:8px;font-size:15px;font-weight:700;letter-spacing:0.1em;">MAIN</span>') +
         '</div>' +
       '</div>' +
       '<div style="text-align:right;">' +
@@ -9107,6 +9142,11 @@ function renderRoster() {
     });
   }
 
+  // Team filter (Main / Academy)
+  if (rosterTeamFilter !== 'all') {
+    list = list.filter(p => (p.team || 'main') === rosterTeamFilter);
+  }
+
   if (search) {
     list = list.filter(p =>
       (p.pseudo || '').toLowerCase().includes(search) ||
@@ -9154,6 +9194,7 @@ function playerCardHtml(p) {
           (flag ? '<span>' + flag + '</span><span class="dot"></span>' : '') +
           '<span>' + escapeHtml(p.game || 'Jeu non précisé') + '</span>' +
         '</div>' +
+        '<div style="margin-top:6px;">' + teamBadge(p.team || 'main') + '</div>' +
       '</div>' +
       (cs ? '<span class="badge badge-' + cs.tone + '">' + cs.label + '</span>' : '') +
     '</div>' +
@@ -9224,6 +9265,7 @@ function openPlayerModal(id) {
     document.getElementById('p_pseudo').value = p.pseudo || '';
     document.getElementById('p_realName').value = p.realName || '';
     gameSel.innerHTML = buildGameOptions(p.game || '');
+    document.getElementById('p_team').value = p.team || 'main';
     mountCountrySelect('p_country_wrapper', 'p_country', p.country || '');
     document.getElementById('p_birthdate').value = p.birthdate || '';
     document.getElementById('p_age').value = p.age || '';
@@ -9246,6 +9288,7 @@ function openPlayerModal(id) {
     document.getElementById('playerModalTitle').textContent = 'Ajouter un joueur';
     document.getElementById('playerForm').reset();
     gameSel.innerHTML = buildGameOptions('');
+    document.getElementById('p_team').value = 'main';
     mountCountrySelect('p_country_wrapper', 'p_country', '');
     document.getElementById('p_birthdate').value = '';
     updateAgeFromBirthdate();
@@ -9270,6 +9313,7 @@ async function savePlayer(e) {
     pseudo: document.getElementById('p_pseudo').value.trim(),
     realName: document.getElementById('p_realName').value.trim(),
     game: document.getElementById('p_game').value.trim(),
+    team: document.getElementById('p_team').value,
     country: document.getElementById('p_country').value.trim().toUpperCase(),
     birthdate: document.getElementById('p_birthdate').value,
     age: (function() {
@@ -9351,6 +9395,18 @@ function setScoutingFilter(f) {
   renderScouting();
 }
 
+function setScoutingTeamFilter(t) {
+  scoutingTeamFilter = t;
+  document.querySelectorAll('[data-teamfilter]').forEach(b => b.classList.toggle('active', b.dataset.teamfilter === t));
+  renderScouting();
+}
+
+// Apply the team filter to a prospect list
+function applyTeamFilter(list) {
+  if (scoutingTeamFilter === 'all') return list;
+  return list.filter(p => (p.targetTeam || 'main') === scoutingTeamFilter);
+}
+
 function setScoutingView(view) {
   scoutingView = view;
   document.querySelectorAll('[data-sview]').forEach(b => b.classList.toggle('active', b.dataset.sview === view));
@@ -9370,6 +9426,7 @@ function renderScouting() {
   let list = prospects.slice();
 
   if (scoutingFilter !== 'all') list = list.filter(p => p.status === scoutingFilter);
+  list = applyTeamFilter(list);
   if (search) {
     list = list.filter(p =>
       (p.pseudo || '').toLowerCase().includes(search) ||
@@ -9404,6 +9461,7 @@ function renderScoutingKanban() {
   const search = (document.getElementById('scoutingSearch')?.value || '').toLowerCase().trim();
 
   let list = prospects.slice();
+  list = applyTeamFilter(list);
   if (search) {
     list = list.filter(p =>
       (p.pseudo || '').toLowerCase().includes(search) ||
@@ -9417,7 +9475,9 @@ function renderScoutingKanban() {
     let colProspects;
     if (col.key === 'signed') {
       // "Signé" shows players promoted from a prospect (read-only cards)
-      colProspects = players.filter(pl => pl.fromProspect).map(pl => ({ _player: pl }));
+      colProspects = players.filter(pl => pl.fromProspect)
+        .filter(pl => scoutingTeamFilter === 'all' || (pl.team || 'main') === scoutingTeamFilter)
+        .map(pl => ({ _player: pl }));
       if (search) {
         colProspects = colProspects.filter(x => (x._player.pseudo || '').toLowerCase().includes(search));
       }
@@ -9451,6 +9511,7 @@ function kanbanCard(p) {
   const negoCount = Array.isArray(p.negoThread) ? p.negoThread.length : 0;
 
   const tags = [];
+  tags.push(teamBadge(p.targetTeam || 'main'));
   if (isFA) tags.push('<span class="kanban-card-tag fa">F/A</span>');
   else if (teamRaw) tags.push('<span class="kanban-card-tag">' + escapeHtml(teamRaw) + '</span>');
   if (p.age) tags.push('<span class="kanban-card-tag">' + p.age + ' ans</span>');
@@ -9559,6 +9620,17 @@ function statusBadge(status) {
   return '<span class="badge badge-' + s.tone + '">' + s.label + '</span>';
 }
 
+// Team target badge (Main / Academy / undefined)
+function teamBadge(team) {
+  const map = {
+    main:      { label: 'MAIN',     bg: 'rgba(220,38,38,0.15)',  color: 'var(--red-bright)' },
+    academy:   { label: 'ACADÉMIE', bg: 'rgba(59,130,246,0.15)', color: 'var(--blue)' },
+    undecided: { label: 'NON DÉFINI', bg: 'var(--bg-3)',          color: 'var(--text-mute)' }
+  };
+  const t = map[team] || map.main;
+  return '<span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.12em;padding:2px 8px;border-radius:6px;background:' + t.bg + ';color:' + t.color + ';">' + t.label + '</span>';
+}
+
 function prospectCardHtml(p) {
   const avatar = p.photo ? '<img src="' + escapeAttr(p.photo) + '" />' : (p.pseudo || '?').charAt(0).toUpperCase();
   const flag = p.country ? flagImg(p.country, 18) : '';
@@ -9589,6 +9661,7 @@ function prospectCardHtml(p) {
           '<span>' + escapeHtml(p.game || '—') + '</span>' +
           (p.role ? '<span class="dot"></span><span>' + escapeHtml(p.role) + '</span>' : '') +
         '</div>' +
+        '<div style="margin-top:6px;">' + teamBadge(p.targetTeam || 'main') + '</div>' +
       '</div>' +
       statusBadge(p.status) +
     '</div>' +
@@ -9640,6 +9713,7 @@ function openProspectModal(id) {
     mountCountrySelect('sp_country_wrapper', 'sp_country', p.country || '');
     document.getElementById('sp_age').value = p.age || '';
     document.getElementById('sp_status').value = p.status || 'watching';
+    document.getElementById('sp_targetTeam').value = p.targetTeam || 'main';
     document.getElementById('sp_currentTeam').value = p.currentTeam || '';
     document.getElementById('sp_contact').value = p.contact || '';
     document.getElementById('sp_twitter').value = p.twitter || '';
@@ -9666,6 +9740,7 @@ function openProspectModal(id) {
   } else {
     document.getElementById('prospectModalTitle').textContent = 'Ajouter un prospect';
     document.getElementById('prospectForm').reset();
+    document.getElementById('sp_targetTeam').value = 'main';
     mountCountrySelect('sp_country_wrapper', 'sp_country', '');
     clearPhotoPreview('prospect');
   }
@@ -9757,6 +9832,7 @@ async function saveProspect(e) {
     country: document.getElementById('sp_country').value.trim().toUpperCase(),
     age: document.getElementById('sp_age').value,
     status: document.getElementById('sp_status').value,
+    targetTeam: document.getElementById('sp_targetTeam').value,
     currentTeam: document.getElementById('sp_currentTeam').value.trim(),
     contact: document.getElementById('sp_contact').value.trim(),
     twitter: document.getElementById('sp_twitter').value.trim(),
@@ -9836,6 +9912,7 @@ async function promoteToPlayer(id) {
       return p.negoNotes ? '\n\n--- Nego ---\n' + p.negoNotes : '';
     })()),
     photo: p.photo || '',
+    team: (p.targetTeam && p.targetTeam !== 'undecided') ? p.targetTeam : 'main',
     createdAt: Date.now(),
     fromProspect: true
   };
