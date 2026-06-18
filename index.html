@@ -4197,93 +4197,7 @@ window.addEventListener('DOMContentLoaded', function() {
       </div>
     </div>
 
-    <!-- Row: Activity heatmap + Cup distribution -->
-    <div class="dash-grid">
-      <div class="dash-card span-8">
-        <div class="dash-card-header">
-          <div>
-            <div class="dash-card-title">Activité — 12 dernières semaines</div>
-            <div class="dash-card-sub">PR enregistrés, cups, actions admin</div>
-          </div>
-          <div id="heatmapTotal" style="font-size:11px;color:var(--text-mute);letter-spacing:0.15em;text-transform:uppercase;"></div>
-        </div>
-        <div class="heatmap-wrap">
-          <div class="heatmap-months" id="heatmapMonths"></div>
-          <div class="heatmap" id="activityHeatmap"></div>
-          <div class="heatmap-legend">
-            <span>Moins</span>
-            <div class="hl-cells">
-              <div class="hl-cell l0"></div>
-              <div class="hl-cell l1"></div>
-              <div class="hl-cell l2"></div>
-              <div class="hl-cell l3"></div>
-              <div class="hl-cell l4"></div>
-            </div>
-            <span>Plus</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="dash-card span-4">
-        <div class="dash-card-header">
-          <div>
-            <div class="dash-card-title">Distribution des places</div>
-            <div class="dash-card-sub">Cup positions de tout le roster</div>
-          </div>
-        </div>
-        <div id="cupDistribution"></div>
-      </div>
-    </div>
-
-    <!-- Row: Top earners (full width) -->
-    <div class="dash-grid">
-      <div class="dash-card span-12">
-        <div class="dash-card-header">
-          <div>
-            <div class="dash-card-title">Top gains cumulés</div>
-            <div class="dash-card-sub">5 meilleurs earners</div>
-          </div>
-        </div>
-        <div id="topEarners"></div>
-      </div>
-    </div>
-
-    <!-- Row: Masse salariale + Best month -->
-    <div class="dash-grid">
-      <div class="dash-card span-6">
-        <div class="dash-card-header">
-          <div>
-            <div class="dash-card-title">Masse salariale</div>
-            <div class="dash-card-sub">Coût du roster — estimation mensuelle</div>
-          </div>
-        </div>
-        <div id="payrollBlock"></div>
-      </div>
-
-      <div class="dash-card span-6">
-        <div class="dash-card-header">
-          <div>
-            <div class="dash-card-title">Meilleur mois</div>
-            <div class="dash-card-sub">Records all-time de l'organisation</div>
-          </div>
-        </div>
-        <div id="bestMonthBlock"></div>
-      </div>
-    </div>
-
-    <!-- Row: Country breakdown -->
-    <div class="dash-grid">
-      <div class="dash-card span-12">
-        <div class="dash-card-header">
-          <div>
-            <div class="dash-card-title">Répartition géographique</div>
-            <div class="dash-card-sub">Roster par pays</div>
-          </div>
-        </div>
-        <div id="countryBreakdown"></div>
-      </div>
-    </div>
-
+    <!-- ============ PERFORMANCE & RÉSULTATS ============ -->
     <!-- Row: Forme du moment + Meilleure perf all-time -->
     <div class="dash-grid">
       <div class="dash-card span-6">
@@ -4307,7 +4221,7 @@ window.addEventListener('DOMContentLoaded', function() {
       </div>
     </div>
 
-    <!-- Row: Place moyenne + Pyramide des âges -->
+    <!-- Row: Place moyenne + Distribution des places -->
     <div class="dash-grid">
       <div class="dash-card span-6">
         <div class="dash-card-header">
@@ -4322,11 +4236,48 @@ window.addEventListener('DOMContentLoaded', function() {
       <div class="dash-card span-6">
         <div class="dash-card-header">
           <div>
-            <div class="dash-card-title">Pyramide des âges</div>
-            <div class="dash-card-sub">Distribution du roster</div>
+            <div class="dash-card-title">Distribution des places</div>
+            <div class="dash-card-sub">Cup positions de tout le roster</div>
           </div>
         </div>
-        <div id="agePyramidBlock"></div>
+        <div id="cupDistribution"></div>
+      </div>
+    </div>
+
+    <!-- Row: Top earners (full width) -->
+    <div class="dash-grid">
+      <div class="dash-card span-12">
+        <div class="dash-card-header">
+          <div>
+            <div class="dash-card-title">Top gains cumulés</div>
+            <div class="dash-card-sub">5 meilleurs earners</div>
+          </div>
+        </div>
+        <div id="topEarners"></div>
+      </div>
+    </div>
+
+    <!-- ============ TENDANCES TEMPORELLES ============ -->
+    <!-- Row: Meilleur mois + Mois en cours vs précédent -->
+    <div class="dash-grid">
+      <div class="dash-card span-6">
+        <div class="dash-card-header">
+          <div>
+            <div class="dash-card-title">Meilleur mois</div>
+            <div class="dash-card-sub">Records all-time de l'organisation</div>
+          </div>
+        </div>
+        <div id="bestMonthBlock"></div>
+      </div>
+
+      <div class="dash-card span-6">
+        <div class="dash-card-header">
+          <div>
+            <div class="dash-card-title">Mois en cours vs mois précédent</div>
+            <div class="dash-card-sub">Comparaison mensuelle des indicateurs clés</div>
+          </div>
+        </div>
+        <div id="monthComparisonBlock"></div>
       </div>
     </div>
 
@@ -4343,19 +4294,72 @@ window.addEventListener('DOMContentLoaded', function() {
       </div>
     </div>
 
-    <!-- Row: Mois en cours vs précédent (mini-KPI) -->
+    <!-- Row: Activity heatmap (full width) -->
     <div class="dash-grid">
       <div class="dash-card span-12">
         <div class="dash-card-header">
           <div>
-            <div class="dash-card-title">Mois en cours vs mois précédent</div>
-            <div class="dash-card-sub">Comparaison mensuelle des indicateurs clés</div>
+            <div class="dash-card-title">Activité — 12 dernières semaines</div>
+            <div class="dash-card-sub">PR enregistrés, cups, actions admin</div>
+          </div>
+          <div id="heatmapTotal" style="font-size:11px;color:var(--text-mute);letter-spacing:0.15em;text-transform:uppercase;"></div>
+        </div>
+        <div class="heatmap-wrap">
+          <div class="heatmap-months" id="heatmapMonths"></div>
+          <div class="heatmap" id="activityHeatmap"></div>
+          <div class="heatmap-legend">
+            <span>Moins</span>
+            <div class="hl-cells">
+              <div class="hl-cell l0"></div>
+              <div class="hl-cell l1"></div>
+              <div class="hl-cell l2"></div>
+              <div class="hl-cell l3"></div>
+              <div class="hl-cell l4"></div>
+            </div>
+            <span>Plus</span>
           </div>
         </div>
-        <div id="monthComparisonBlock"></div>
       </div>
     </div>
 
+    <!-- ============ FINANCE & EFFECTIF ============ -->
+    <!-- Row: Masse salariale + Pyramide des âges -->
+    <div class="dash-grid">
+      <div class="dash-card span-6">
+        <div class="dash-card-header">
+          <div>
+            <div class="dash-card-title">Masse salariale</div>
+            <div class="dash-card-sub">Coût du roster — estimation mensuelle</div>
+          </div>
+        </div>
+        <div id="payrollBlock"></div>
+      </div>
+
+      <div class="dash-card span-6">
+        <div class="dash-card-header">
+          <div>
+            <div class="dash-card-title">Pyramide des âges</div>
+            <div class="dash-card-sub">Distribution du roster</div>
+          </div>
+        </div>
+        <div id="agePyramidBlock"></div>
+      </div>
+    </div>
+
+    <!-- Row: Country breakdown -->
+    <div class="dash-grid">
+      <div class="dash-card span-12">
+        <div class="dash-card-header">
+          <div>
+            <div class="dash-card-title">Répartition géographique</div>
+            <div class="dash-card-sub">Roster par pays</div>
+          </div>
+        </div>
+        <div id="countryBreakdown"></div>
+      </div>
+    </div>
+
+    <!-- ============ RECONNAISSANCE & SUIVI ============ -->
     <!-- Row: Hall of Fame -->
     <div class="dash-grid">
       <div class="dash-card span-12">
@@ -4369,9 +4373,9 @@ window.addEventListener('DOMContentLoaded', function() {
       </div>
     </div>
 
-    <!-- Row: Activité des managers -->
+    <!-- Row: Activité des managers + Activité récente -->
     <div class="dash-grid">
-      <div class="dash-card span-12">
+      <div class="dash-card span-6">
         <div class="dash-card-header">
           <div>
             <div class="dash-card-title">Activité des managers</div>
@@ -4380,11 +4384,8 @@ window.addEventListener('DOMContentLoaded', function() {
         </div>
         <div id="managerActivityBlock"></div>
       </div>
-    </div>
 
-    <!-- Row: Activité récente (last block) -->
-    <div class="dash-grid">
-      <div class="dash-card span-12">
+      <div class="dash-card span-6">
         <div class="dash-card-header">
           <div>
             <div class="dash-card-title">Activité récente</div>
@@ -5980,8 +5981,16 @@ function renderNotifications() {
    ci-dessous (la plus récente en premier). Incrémente CHANGELOG_VERSION
    pour faire réapparaître la pastille "nouveau" à tous les utilisateurs.
 */
-const CHANGELOG_VERSION = 10;  // bump this when you add an entry
+const CHANGELOG_VERSION = 11;  // bump this when you add an entry
 const CHANGELOG = [
+  {
+    date: '2026-06-18',
+    title: 'Réorganisation du dashboard',
+    items: [
+      'Blocs regroupés par thème : vue d\'ensemble, performance, tendances, finance, suivi.',
+      'Plusieurs blocs appariés en demi-largeur (Distribution des places, Meilleur mois + comparaison mensuelle, Activité managers + récente) pour réduire le scroll.'
+    ]
+  },
   {
     date: '2026-06-18',
     title: 'Correction "Top performer du mois"',
