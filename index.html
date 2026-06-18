@@ -4602,6 +4602,7 @@ window.addEventListener('DOMContentLoaded', function() {
       <div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-mute);margin:16px 0 8px;">Événements à notifier</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;">
         <label class="checkbox-row"><input type="checkbox" id="dc_ev_cupWin" /> 🏆 Victoire en cup (Top 1)</label>
+        <label class="checkbox-row"><input type="checkbox" id="dc_ev_cupTop10" /> 🔟 Top 10 en cup</label>
         <label class="checkbox-row"><input type="checkbox" id="dc_ev_bigPrize" /> 💰 Gros gain</label>
         <label class="checkbox-row"><input type="checkbox" id="dc_ev_prRecord" /> 📈 Nouveau record PR</label>
         <label class="checkbox-row"><input type="checkbox" id="dc_ev_promotion" /> ✍️ Signature (prospect promu)</label>
@@ -5857,6 +5858,7 @@ let discordConfig = {
   bigPrizeThreshold: 1000,
   events: {
     cupWin: true,        // 🏆 Victoire (Top 1)
+    cupTop10: true,      // 🔟 Top 10 en cup
     bigPrize: true,      // 💰 Gros gain
     prRecord: true,      // 📈 Nouveau record PR
     promotion: true,     // ✍️ Signature (prospect promu)
@@ -5888,6 +5890,7 @@ function fillDiscordForm() {
   set('dc_webhookUrl', discordConfig.webhookUrl || '');
   set('dc_bigPrize', discordConfig.bigPrizeThreshold || 1000);
   set('dc_ev_cupWin', discordConfig.events.cupWin);
+  set('dc_ev_cupTop10', discordConfig.events.cupTop10);
   set('dc_ev_bigPrize', discordConfig.events.bigPrize);
   set('dc_ev_prRecord', discordConfig.events.prRecord);
   set('dc_ev_promotion', discordConfig.events.promotion);
@@ -5918,6 +5921,7 @@ async function saveDiscordSettings() {
   discordConfig.bigPrizeThreshold = Number(get('dc_bigPrize').value) || 1000;
   discordConfig.events = {
     cupWin: get('dc_ev_cupWin').checked,
+    cupTop10: get('dc_ev_cupTop10').checked,
     bigPrize: get('dc_ev_bigPrize').checked,
     prRecord: get('dc_ev_prRecord').checked,
     promotion: get('dc_ev_promotion').checked,
@@ -6018,6 +6022,7 @@ async function sendDiscordNotification(eventType, payload) {
 
   const colorMap = {
     cupWin: 0x22c55e,
+    cupTop10: 0x4ade80,
     bigPrize: 0xfacc15,
     prRecord: 0x3b82f6,
     promotion: 0x22c55e,
@@ -6041,7 +6046,10 @@ async function sendDiscordNotification(eventType, payload) {
 
   const body = {
     username: 'SOVEREIGN',
-    embeds: [embed]
+    content: '@everyone',
+    embeds: [embed],
+    // Explicitly allow the @everyone mention to actually ping
+    allowed_mentions: { parse: ['everyone'] }
   };
 
   try {
@@ -6229,8 +6237,16 @@ function renderNotifications() {
    ci-dessous (la plus récente en premier). Incrémente CHANGELOG_VERSION
    pour faire réapparaître la pastille "nouveau" à tous les utilisateurs.
 */
-const CHANGELOG_VERSION = 14;  // bump this when you add an entry
+const CHANGELOG_VERSION = 15;  // bump this when you add an entry
 const CHANGELOG = [
+  {
+    date: '2026-06-18',
+    title: 'Discord : @everyone + Top 10',
+    items: [
+      'Chaque annonce Discord mentionne désormais @everyone.',
+      'Nouvel événement "Top 10 en cup" (activable/désactivable), en plus de la victoire (Top 1).'
+    ]
+  },
   {
     date: '2026-06-18',
     title: 'Correction notifications Discord',
@@ -11142,6 +11158,22 @@ async function addCupEntry() {
       description: '**' + p.pseudo + '** remporte **' + name + '**',
       fields: [
         { name: 'Place', value: '🥇 #1', inline: true },
+        { name: 'Gain', value: prizeNum > 0 ? fmtNumber(Math.round(prizeNum)) + ' €' : '—', inline: true }
+      ],
+      thumbnail: p.photo || null
+    });
+  } else if (posNum != null && posNum <= 10) {
+    // 🔟 Top 10 finish
+    await pushNotification(
+      'data',
+      '🔟 Top 10 : ' + p.pseudo + ' finit #' + posNum + ' sur ' + name + (prizeNum > 0 ? ' — ' + fmtNumber(Math.round(prizeNum)) + ' €' : ''),
+      'success'
+    );
+    sendDiscordNotification('cupTop10', {
+      title: '🔟 Top 10 en cup !',
+      description: '**' + p.pseudo + '** se classe dans le Top 10 sur **' + name + '**',
+      fields: [
+        { name: 'Place', value: '#' + posNum, inline: true },
         { name: 'Gain', value: prizeNum > 0 ? fmtNumber(Math.round(prizeNum)) + ' €' : '—', inline: true }
       ],
       thumbnail: p.photo || null
