@@ -5981,8 +5981,16 @@ function renderNotifications() {
    ci-dessous (la plus récente en premier). Incrémente CHANGELOG_VERSION
    pour faire réapparaître la pastille "nouveau" à tous les utilisateurs.
 */
-const CHANGELOG_VERSION = 11;  // bump this when you add an entry
+const CHANGELOG_VERSION = 12;  // bump this when you add an entry
 const CHANGELOG = [
+  {
+    date: '2026-06-18',
+    title: 'Explication "Forme du moment"',
+    items: [
+      'Survol d\'un joueur : infobulle détaillant le calcul (score de chaque cup, barème, paliers).',
+      'Affichage corrigé du nombre réel de cups analysées (au lieu de toujours "5").'
+    ]
+  },
   {
     date: '2026-06-18',
     title: 'Réorganisation du dashboard',
@@ -7858,6 +7866,21 @@ function renderCountryBreakdown() {
 function renderRecentForm() {
   const container = document.getElementById('recentFormBlock');
   if (!container) return;
+
+  // Human-readable tier label for a placement (matches cupQualityScore brackets)
+  function placeTier(n) {
+    if (n <= 1) return 'Victoire';
+    if (n <= 3) return 'Podium';
+    if (n <= 5) return 'Top 5';
+    if (n <= 10) return 'Top 10';
+    if (n <= 25) return 'Top 25';
+    if (n <= 50) return 'Top 50';
+    if (n <= 100) return 'Top 100';
+    if (n <= 250) return 'Top 250';
+    if (n <= 500) return 'Top 500';
+    return '+500';
+  }
+
   const items = players.map(p => {
     const cups = (p.cups || []).slice()
       .filter(c => c.date)
@@ -7865,16 +7888,19 @@ function renderRecentForm() {
       .slice(0, 5);
     if (cups.length === 0) return null;
     let total = 0, count = 0;
+    const detail = []; // per-cup breakdown for the tooltip
     cups.forEach(c => {
       const m = String(c.position || '').match(/(\d+)/);
       if (!m) return;
       const n = parseInt(m[1], 10);
       if (isNaN(n)) return;
-      total += cupQualityScore(n);
+      const score = cupQualityScore(n);
+      total += score;
       count++;
+      detail.push('  #' + n + ' (' + placeTier(n) + ') = ' + score + ' pts  ·  ' + (c.name || 'cup'));
     });
     if (count === 0) return null;
-    return { player: p, avg: total / count, cupCount: cups.length };
+    return { player: p, avg: total / count, cupCount: count, detail };
   }).filter(x => x).sort((a, b) => b.avg - a.avg);
 
   if (items.length === 0) {
@@ -7891,10 +7917,18 @@ function renderRecentForm() {
 
   container.innerHTML = items.slice(0, 6).map(x => {
     const t = tone(x.avg);
-    return '<div class="mini-row">' +
+    // Build a plain-text tooltip (native title attr — never clipped by overflow:hidden)
+    const tip =
+      'FORME DU MOMENT — ' + x.player.pseudo + '\n' +
+      'Moyenne de qualité sur les ' + x.cupCount + ' dernière' + (x.cupCount > 1 ? 's' : '') + ' cup' + (x.cupCount > 1 ? 's' : '') + '.\n\n' +
+      'Détail :\n' + x.detail.join('\n') + '\n\n' +
+      'Score = ' + Math.round(x.avg) + '/100  →  ' + t.label + '\n' +
+      'Barème : Victoire 100 · Podium 92 · Top5 85 · Top10 75 · Top25 60 · Top50 45 · Top100 28 · Top250 15 · Top500 7 · +500 3\n' +
+      'Paliers : 70+ Excellent · 50-69 Bonne · 30-49 Moyenne · -30 Faible';
+    return '<div class="mini-row" title="' + escapeAttr(tip) + '" style="cursor:help;">' +
       '<div>' +
         '<div class="mini-row-name">' + escapeHtml(x.player.pseudo) + '</div>' +
-        '<div class="mini-row-sub">' + x.cupCount + ' cup' + (x.cupCount > 1 ? 's' : '') + ' analysée' + (x.cupCount > 1 ? 's' : '') + '</div>' +
+        '<div class="mini-row-sub">' + x.cupCount + ' cup' + (x.cupCount > 1 ? 's' : '') + ' analysée' + (x.cupCount > 1 ? 's' : '') + ' · survol pour le détail</div>' +
       '</div>' +
       '<div class="mini-row-val">' +
         '<span style="font-family:var(--font-display);font-size:18px;color:var(--white);">' + Math.round(x.avg) + '</span>' +
