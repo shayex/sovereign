@@ -2553,7 +2553,7 @@
   /* === Kanban board === */
   .kanban-board {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 14px;
     align-items: start;
   }
@@ -2579,6 +2579,7 @@
   .kanban-col.interested .kanban-col-accent { background: var(--amber); }
   .kanban-col.signed .kanban-col-accent { background: var(--green); }
   .kanban-col.rejected .kanban-col-accent { background: var(--red-deep); }
+  .kanban-col.not_interesting .kanban-col-accent { background: #475569; }
   .kanban-col-header {
     padding: 14px 16px;
     border-bottom: 1px solid var(--border);
@@ -4527,6 +4528,7 @@ window.addEventListener('DOMContentLoaded', function() {
       <button class="filter-chip" data-pfilter="contacted" onclick="setScoutingFilter('contacted')">Contactés</button>
       <button class="filter-chip" data-pfilter="interested" onclick="setScoutingFilter('interested')">Intéressés</button>
       <button class="filter-chip" data-pfilter="rejected" onclick="setScoutingFilter('rejected')">Refusés</button>
+      <button class="filter-chip" data-pfilter="not_interesting" onclick="setScoutingFilter('not_interesting')">Pas intéressants</button>
       <span style="width:1px;height:24px;background:var(--border);margin:0 4px;"></span>
       <button class="filter-chip team-chip active" data-teamfilter="all" onclick="setScoutingTeamFilter('all')">Toutes équipes</button>
       <button class="filter-chip team-chip" data-teamfilter="main" onclick="setScoutingTeamFilter('main')">Main</button>
@@ -4823,6 +4825,7 @@ window.addEventListener('DOMContentLoaded', function() {
             <option value="contacted">Contacté</option>
             <option value="interested">Intéressé</option>
             <option value="rejected">Refusé / Pas dispo</option>
+            <option value="not_interesting">Pas intéressant</option>
           </select>
         </div>
         <div class="form-group">
@@ -5633,7 +5636,7 @@ function daysSince(ts) {
 const PROSPECT_STALE_DAYS = 14;
 function isProspectStale(p) {
   if (!p) return false;
-  if (p.status === 'rejected' || p.status === 'signed') return false;
+  if (p.status === 'rejected' || p.status === 'signed' || p.status === 'not_interesting') return false;
   const last = p.updatedAt || p.createdAt;
   const d = daysSince(last);
   return d != null && d >= PROSPECT_STALE_DAYS;
@@ -6295,8 +6298,16 @@ function renderNotifications() {
    ci-dessous (la plus récente en premier). Incrémente CHANGELOG_VERSION
    pour faire réapparaître la pastille "nouveau" à tous les utilisateurs.
 */
-const CHANGELOG_VERSION = 17;  // bump this when you add an entry
+const CHANGELOG_VERSION = 18;  // bump this when you add an entry
 const CHANGELOG = [
+  {
+    date: '2026-06-29',
+    title: 'Scouting : statut "Pas intéressant"',
+    items: [
+      'Nouveau statut "Pas intéressant" dans la fiche prospect.',
+      'Sa propre colonne dans le Kanban et un filtre dédié dans la barre du scouting.'
+    ]
+  },
   {
     date: '2026-06-29',
     title: 'Scouting : suivi des mises à jour',
@@ -10089,7 +10100,8 @@ const KANBAN_COLUMNS = [
   { key: 'contacted',  label: 'Contacté' },
   { key: 'interested', label: 'Intéressé' },
   { key: 'signed',     label: 'Signé' },
-  { key: 'rejected',   label: 'Refusé' }
+  { key: 'rejected',   label: 'Refusé' },
+  { key: 'not_interesting', label: 'Pas intéressant' }
 ];
 
 function renderScoutingKanban() {
@@ -10255,7 +10267,8 @@ function statusBadge(status) {
     watching:   { tone: 'mute',  label: 'À suivre' },
     contacted:  { tone: 'blue',  label: 'Contacté' },
     interested: { tone: 'amber', label: 'Intéressé' },
-    rejected:   { tone: 'red',   label: 'Refusé' }
+    rejected:   { tone: 'red',   label: 'Refusé' },
+    not_interesting: { tone: 'mute', label: 'Pas intéressant' }
   };
   const s = map[status] || map.watching;
   return '<span class="badge badge-' + s.tone + '">' + s.label + '</span>';
