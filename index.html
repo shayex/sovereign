@@ -5738,6 +5738,9 @@ const COUNTRIES = [
   { code: 'FI', name: 'Finlande' },
   { code: 'IS', name: 'Islande' },
   { code: 'PL', name: 'Pologne' },
+  { code: 'LT', name: 'Lituanie' },
+  { code: 'LV', name: 'Lettonie' },
+  { code: 'EE', name: 'Estonie' },
   { code: 'CZ', name: 'Tchéquie' },
   { code: 'AT', name: 'Autriche' },
   { code: 'HU', name: 'Hongrie' },
@@ -6298,8 +6301,15 @@ function renderNotifications() {
    ci-dessous (la plus récente en premier). Incrémente CHANGELOG_VERSION
    pour faire réapparaître la pastille "nouveau" à tous les utilisateurs.
 */
-const CHANGELOG_VERSION = 18;  // bump this when you add an entry
+const CHANGELOG_VERSION = 19;  // bump this when you add an entry
 const CHANGELOG = [
+  {
+    date: '2026-06-29',
+    title: 'Pays baltes ajoutés',
+    items: [
+      'Ajout de la Lituanie, la Lettonie et l\'Estonie dans la liste des pays (joueurs et prospects).'
+    ]
+  },
   {
     date: '2026-06-29',
     title: 'Scouting : statut "Pas intéressant"',
